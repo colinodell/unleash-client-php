@@ -339,20 +339,22 @@ final class UnleashBuilderTest extends TestCase
         $cacheProperty = (new ReflectionObject($configuration))->getProperty('cache');
         $cacheProperty->setAccessible(true);
 
-        $unleash = $instance->build();
-        $repository = $repositoryProperty->getValue($unleash);
-        $configuration = $configurationProperty->getValue($repository);
-        $cache = $cacheProperty->getValue($configuration);
-
-        self::assertInstanceOf(FilesystemCachePool::class, $cache);
-
         $defaultImplementationsProperty = (new ReflectionObject($locator))->getProperty('defaultImplementations');
         $defaultImplementationsProperty->setAccessible(true);
         $defaultImplementations = $defaultImplementationsProperty->getValue($locator);
 
-        $defaultImplementations['cache'][FilesystemCachePool::class . 2] = [];
-        unset($defaultImplementations['cache'][FilesystemCachePool::class]);
-        $defaultImplementationsProperty->setValue($locator, $defaultImplementations);
+        if (class_exists(FilesystemCachePool::class)) {
+            $unleash = $instance->build();
+            $repository = $repositoryProperty->getValue($unleash);
+            $configuration = $configurationProperty->getValue($repository);
+            $cache = $cacheProperty->getValue($configuration);
+
+            self::assertInstanceOf(FilesystemCachePool::class, $cache);
+
+            $defaultImplementations['cache'][FilesystemCachePool::class . 2] = [];
+            unset($defaultImplementations['cache'][FilesystemCachePool::class]);
+            $defaultImplementationsProperty->setValue($locator, $defaultImplementations);
+        }
 
         $unleash = $instance->build();
         $repository = $repositoryProperty->getValue($unleash);
